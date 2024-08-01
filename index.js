@@ -19,7 +19,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
-      "http://cloud-task-manager-backend-1.onrender.com",
+      "https://taskite.netlify.app/",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
