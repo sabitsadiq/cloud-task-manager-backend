@@ -1,25 +1,17 @@
+import User from "../models/user.js";
 import Task from "../models/task.js";
 import Notice from "../models/notification.js";
 export const createTask = async (req, res) => {
   try {
     const { title, team, stage, priority, date, assets } = req.body;
+    const { userId } = req.user;
 
     let text = "Task has been assigned to you.";
-    if (team.length > 1) {
-      text = text + `and ${task.team.length - 1} others.`;
-    }
-
-    text =
-      text +
-      `The task priority is set a ${
-        task.priority
-      } priority, so check and act accordingly. The task date is ${new Date.toDateString()}. Thank you !!!`;
     const activity = {
       type: "assigned",
       activity: text,
       by: userId,
     };
-
     const task = await Task.create({
       title,
       team,
@@ -30,7 +22,17 @@ export const createTask = async (req, res) => {
       activities: activity,
     });
 
-    await Notice.create({ team, text, task: task._id });
+    if (team.length > 1) {
+      text = text + `and ${task.team.length - 1} others.`;
+    }
+
+    text =
+      text +
+      `The task priority is set a ${
+        task.priority
+      } priority, so check and act accordingly. The task date is ${new Date.toDateString()}. Thank you !!!`;
+
+    await Notice.create({ team, text, task: task?._id });
 
     res
       .status(200)
@@ -115,8 +117,8 @@ export const dashboardStatistics = async (req, res) => {
       .sort({ _id: -1 });
 
     //   Group task by stage and calculate counts
-    const groupTask = allTasks.reduce((result, task) => {
-      const stage = task.stage;
+    const groupTask = allTasks?.reduce((result, task) => {
+      const stage = task?.stage;
 
       if (!result[stage]) {
         result[stage] = 1;
@@ -126,15 +128,17 @@ export const dashboardStatistics = async (req, res) => {
       return result;
     }, {});
 
+    console.log("allTask", allTasks);
     //   Group task by priority
     const groupData = Object.entries(
       allTasks
-        .reduce((result, task) => {
+        ?.reduce((result, task) => {
           const { priority } = task;
           result[priority] = (result[priority] || 0) + 1;
+          console.log(result);
           return result;
         }, {})
-        .map(([name, total]) => ({ name, total }))
+        ?.map(([name, total]) => ({ name, total }))
     );
 
     // calculate total tasks
